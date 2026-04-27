@@ -298,8 +298,8 @@ function addSurnamePath(
   });
 
   if (selectedId === surname.id) {
-    surname.relatedSurnames.forEach((relatedName) => {
-      const related = surnames.find((item) => item.name === relatedName);
+    surname.relatedSurnames.forEach((relation) => {
+      const related = surnames.find((item) => item.name === relation.name);
       if (!related) return;
 
       const relatedNodeId = `surname-${related.id}`;
@@ -316,13 +316,188 @@ function addSurnamePath(
         id: `${surnameNodeId}-${relatedNodeId}-related`,
         source: surnameNodeId,
         target: relatedNodeId,
-        data: { label: "相关" },
+        data: { label: relation.label },
       });
     });
   }
 }
 
+function buildSelectedSurnameGraph(selected: SurnameRecord): VizGraphData {
+  const nodes = new Map<string, VizNode>();
+  const edges = new Map<string, VizEdge>();
+  const surnameNodeId = `surname-${selected.id}`;
+  const rowGap = 160;
+  const startY = 360 - ((selected.origins.length - 1) * rowGap) / 2;
+
+  addNode(nodes, {
+    id: surnameNodeId,
+    style: { x: 840, y: 360 },
+    data: {
+      label: selected.name,
+      kind: "surname",
+      description: selected.brief,
+      surnameId: selected.id,
+    },
+  });
+
+  selected.origins.forEach((origin, index) => {
+    const y = startY + index * rowGap;
+    const typeNodeId = `type-${origin.kind}`;
+    const period = periodGroups.find((group) => group.periods.includes(origin.period));
+    const originNodeId = `detail-${selected.id}-${index}-origin`;
+    const root = origin.sourceRoot ? rootGroups.find((group) => group.name === origin.sourceRoot) : undefined;
+
+    if (root) {
+      addNode(nodes, {
+        id: root.id,
+        style: { x: 210, y: y - 52 },
+        data: {
+          label: root.name,
+          kind: "root",
+          description: root.description,
+          count: root.surnameIds.length,
+        },
+      });
+      addEdge(edges, {
+        id: `${root.id}-${originNodeId}`,
+        source: root.id,
+        target: originNodeId,
+        data: { label: "源流" },
+      });
+    }
+
+    addNode(nodes, {
+      id: typeNodeId,
+      style: { x: 210, y },
+      data: {
+        label: originTypeLabels[origin.kind],
+        kind: "originType",
+        description: originTypes.find((type) => type.id === origin.kind)?.description,
+      },
+    });
+    addEdge(edges, {
+      id: `${typeNodeId}-${originNodeId}`,
+      source: typeNodeId,
+      target: originNodeId,
+      data: { label: "类型" },
+    });
+
+    if (period) {
+      addNode(nodes, {
+        id: period.id,
+        style: { x: 210, y: y + 52 },
+        data: {
+          label: period.name,
+          kind: "period",
+          description: "按历史阶段聚合姓氏源流。",
+        },
+      });
+      addEdge(edges, {
+        id: `${period.id}-${originNodeId}`,
+        source: period.id,
+        target: originNodeId,
+        data: { label: "时代" },
+      });
+    }
+
+    addNode(nodes, {
+      id: originNodeId,
+      style: { x: 570, y },
+      data: {
+        label: origin.place ?? origin.ancestor ?? originTypeLabels[origin.kind],
+        kind: "originDetail",
+        description: origin.summary,
+        originIndex: index,
+      },
+    });
+    addEdge(edges, {
+      id: `${originNodeId}-${surnameNodeId}`,
+      source: originNodeId,
+      target: surnameNodeId,
+      data: { label: index === 0 ? "主要来源" : "支流" },
+    });
+
+    if (origin.ancestor) {
+      const personNodeId = `detail-${selected.id}-${index}-person`;
+      addNode(nodes, {
+        id: personNodeId,
+        style: { x: 405, y: y - 42 },
+        data: {
+          label: origin.ancestor,
+          kind: "person",
+          description: "起源叙事中的关键人物。",
+          originIndex: index,
+        },
+      });
+      addEdge(edges, {
+        id: `${personNodeId}-${originNodeId}`,
+        source: personNodeId,
+        target: originNodeId,
+        data: { label: "人物" },
+      });
+    }
+
+    if (origin.place) {
+      const placeNodeId = `detail-${selected.id}-${index}-place`;
+      addNode(nodes, {
+        id: placeNodeId,
+        style: { x: 405, y: origin.ancestor ? y + 42 : y },
+        data: {
+          label: origin.place,
+          kind: "region",
+          description: "起源叙事中的地望或封邑。",
+          originIndex: index,
+        },
+      });
+      addEdge(edges, {
+        id: `${placeNodeId}-${originNodeId}`,
+        source: placeNodeId,
+        target: originNodeId,
+        data: { label: "地望" },
+      });
+    }
+  });
+
+  const relatedRecords = selected.relatedSurnames
+    .map((relation) => ({
+      relation,
+      surname: surnames.find((surname) => surname.name === relation.name),
+    }))
+    .filter((item): item is { relation: (typeof selected.relatedSurnames)[number]; surname: SurnameRecord } =>
+      Boolean(item.surname),
+    );
+  relatedRecords.forEach(({ relation, surname: related }, index) => {
+    const relatedNodeId = `surname-${related.id}`;
+    addNode(nodes, {
+      id: relatedNodeId,
+      style: placeOnArc(index, relatedRecords.length, 1085, 360, 130, -70, 140),
+      data: {
+        label: related.name,
+        kind: "surname",
+        description: related.brief,
+        surnameId: related.id,
+      },
+    });
+    addEdge(edges, {
+      id: `${surnameNodeId}-${relatedNodeId}-related`,
+      source: surnameNodeId,
+      target: relatedNodeId,
+      data: { label: relation.label },
+    });
+  });
+
+  return {
+    nodes: Array.from(nodes.values()),
+    edges: Array.from(edges.values()),
+  };
+}
+
 export function buildGraphData(expandedIds: string[], selectedSurnameId?: string): VizGraphData {
+  if (selectedSurnameId) {
+    const selected = surnameById.get(selectedSurnameId);
+    if (selected) return buildSelectedSurnameGraph(selected);
+  }
+
   const nodes = new Map<string, VizNode>();
   const edges = new Map<string, VizEdge>();
 

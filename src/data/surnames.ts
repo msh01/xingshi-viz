@@ -92,7 +92,7 @@ export const surnames: SurnameRecord[] = [
         summary: "历史上亦有少数民族汉化改为王姓的记载。",
       },
     ],
-    relatedSurnames: ["周", "姬", "赵", "陈"],
+    relatedSurnames: [{ name: "周", label: "同源参考", note: "同属姬姓、王族或先秦宗族相关脉络。" }, { name: "姬", label: "源头姓", note: "王姓部分源流可上溯至姬姓系统。" }, { name: "赵", label: "先秦宗族", note: "与王姓部分源流同在先秦贵族姓氏网络中。" }, { name: "陈", label: "多源参照", note: "与王姓一样存在多源流叙事。" }],
   },
   {
     id: "li",
@@ -113,7 +113,7 @@ export const surnames: SurnameRecord[] = [
         summary: "唐代李氏为国姓，赐姓和依附改姓使其分布进一步扩大。",
       },
     ],
-    relatedSurnames: ["理", "赵", "唐"],
+    relatedSurnames: [{ name: "理", label: "音变线索", note: "李姓起源传说中常见理官、理氏音变线索。" }, { name: "赵", label: "先秦参照", note: "同属先秦姓氏源流讨论中的常见参照。" }, { name: "唐", label: "国姓扩散", note: "唐代李氏国姓扩散与赐姓相关。" }],
   },
   {
     id: "zhao",
@@ -130,7 +130,7 @@ export const surnames: SurnameRecord[] = [
         summary: "相传造父受封于赵城，后世以邑为氏。",
       },
     ],
-    relatedSurnames: ["秦", "梁", "马"],
+    relatedSurnames: [{ name: "秦", label: "同属嬴姓源流", note: "秦、赵均常归入嬴姓古国支派。" }, { name: "梁", label: "同源支脉", note: "梁姓一支也与嬴姓封国相关。" }, { name: "马", label: "赵氏近支", note: "马姓一支以赵奢封号马服君为关键线索。" }],
   },
   {
     id: "zhou",
@@ -146,7 +146,7 @@ export const surnames: SurnameRecord[] = [
         summary: "周王室及其后裔中有以国号、地名为氏者。",
       },
     ],
-    relatedSurnames: ["姬", "吴", "郑"],
+    relatedSurnames: [{ name: "姬", label: "源头姓", note: "周姓常上溯至姬姓周族系统。" }, { name: "吴", label: "同属姬姓源流", note: "吴姓一支源于姬姓吴国。" }, { name: "郑", label: "同属姬姓源流", note: "郑姓一支源于姬姓郑国。" }],
   },
   {
     id: "wu",
@@ -163,7 +163,7 @@ export const surnames: SurnameRecord[] = [
         summary: "吴国后裔以国为氏，是吴姓重要来源之一。",
       },
     ],
-    relatedSurnames: ["周", "泰", "郑"],
+    relatedSurnames: [{ name: "周", label: "同属姬姓源流", note: "吴、周均常见于姬姓周族系统。" }, { name: "泰", label: "人物线索", note: "吴姓源流中常见太伯相关叙事。" }, { name: "郑", label: "同属姬姓源流", note: "郑姓一支源于姬姓郑国。" }],
   },
   {
     id: "zheng",
@@ -179,7 +179,7 @@ export const surnames: SurnameRecord[] = [
         summary: "郑国亡后，宗族及国人有以国为氏者。",
       },
     ],
-    relatedSurnames: ["周", "姬", "韩"],
+    relatedSurnames: [{ name: "周", label: "周族脉络", note: "郑姓常与周王室支派相关。" }, { name: "姬", label: "源头姓", note: "郑姓一支上溯至姬姓系统。" }, { name: "韩", label: "邻近封国", note: "同属先秦封国得姓语境。" }],
   },
   {
     id: "lu",
@@ -196,7 +196,7 @@ export const surnames: SurnameRecord[] = [
         summary: "鲁国后裔以国名为氏，是鲁姓代表性来源。",
       },
     ],
-    relatedSurnames: ["周", "姬", "曹"],
+    relatedSurnames: [{ name: "周", label: "周族脉络", note: "鲁姓一支与周公、鲁国相关。" }, { name: "姬", label: "源头姓", note: "鲁姓一支上溯至姬姓系统。" }, { name: "曹", label: "同属姬姓源流", note: "曹姓一支源于姬姓曹国。" }],
   },
   {
     id: "cao",
@@ -212,7 +212,7 @@ export const surnames: SurnameRecord[] = [
         summary: "曹国后人以国名为氏，是曹姓的重要源流。",
       },
     ],
-    relatedSurnames: ["周", "鲁"],
+    relatedSurnames: [{ name: "周", label: "周族脉络", note: "曹姓一支与周族封国相关。" }, { name: "鲁", label: "同属姬姓源流", note: "鲁姓一支源于姬姓鲁国。" }],
   },
   {
     id: "jiang",
@@ -227,7 +227,7 @@ export const surnames: SurnameRecord[] = [
         summary: "姜姓常被视为炎帝系统的重要姓源。",
       },
     ],
-    relatedSurnames: ["吕", "齐", "许"],
+    relatedSurnames: [{ name: "吕", label: "同属姜姓源流", note: "吕姓一支源于姜姓吕国。" }, { name: "齐", label: "同属姜姓源流", note: "齐姓一支与姜姓齐国相关。" }, { name: "许", label: "同属姜姓源流", note: "许姓一支源于姜姓许国。" }],
   },
   {
     id: "lv",
@@ -244,7 +244,7 @@ export const surnames: SurnameRecord[] = [
         summary: "姜姓支派有以吕国为氏者。",
       },
     ],
-    relatedSurnames: ["姜", "齐"],
+    relatedSurnames: [{ name: "姜", label: "源头姓", note: "吕姓一支归入姜姓系统。" }, { name: "齐", label: "同属姜姓源流", note: "吕、齐均常见于姜姓支派。" }],
   },
   {
     id: "xu",
@@ -260,7 +260,7 @@ export const surnames: SurnameRecord[] = [
         summary: "许国后人以国名为氏。",
       },
     ],
-    relatedSurnames: ["姜", "吕"],
+    relatedSurnames: [{ name: "姜", label: "源头姓", note: "许姓一支归入姜姓系统。" }, { name: "吕", label: "同属姜姓源流", note: "吕姓一支源于姜姓吕国。" }],
   },
   {
     id: "qi",
@@ -276,7 +276,7 @@ export const surnames: SurnameRecord[] = [
         summary: "齐国宗族、国人及相关支派有以齐为氏者。",
       },
     ],
-    relatedSurnames: ["姜", "吕", "田"],
+    relatedSurnames: [{ name: "姜", label: "源头姓", note: "齐姓一支与姜姓齐国相关。" }, { name: "吕", label: "姜姓支派", note: "吕姓与姜姓吕国相关。" }, { name: "田", label: "齐国后续脉络", note: "田氏齐与齐国姓氏流变相关。" }],
   },
   {
     id: "chen",
@@ -293,7 +293,7 @@ export const surnames: SurnameRecord[] = [
         summary: "舜帝后裔受封陈国，后人以国为氏。",
       },
     ],
-    relatedSurnames: ["胡", "田", "妫"],
+    relatedSurnames: [{ name: "胡", label: "谥号支派", note: "胡姓一支与陈胡公相关。" }, { name: "田", label: "陈田流变", note: "田姓常与陈氏入齐后的流变相关。" }, { name: "妫", label: "源头姓", note: "陈姓一支上溯至妫姓系统。" }],
   },
   {
     id: "tian",
@@ -309,7 +309,7 @@ export const surnames: SurnameRecord[] = [
         summary: "陈氏入齐后有改称田氏的流变。",
       },
     ],
-    relatedSurnames: ["陈", "齐", "胡"],
+    relatedSurnames: [{ name: "陈", label: "陈田流变", note: "田姓一支与陈氏入齐相关。" }, { name: "齐", label: "齐国脉络", note: "田氏齐与齐国历史相关。" }, { name: "胡", label: "同属妫姓源流", note: "胡姓一支也与陈胡公相关。" }],
   },
   {
     id: "hu",
@@ -325,7 +325,7 @@ export const surnames: SurnameRecord[] = [
         summary: "一支以后世尊奉的陈胡公谥号为氏。",
       },
     ],
-    relatedSurnames: ["陈", "田"],
+    relatedSurnames: [{ name: "陈", label: "陈胡公脉络", note: "胡姓一支与陈胡公谥号相关。" }, { name: "田", label: "同属妫姓源流", note: "田姓一支与陈氏入齐后的流变相关。" }],
   },
   {
     id: "song",
@@ -341,7 +341,7 @@ export const surnames: SurnameRecord[] = [
         summary: "宋国后人以国名为氏。",
       },
     ],
-    relatedSurnames: ["孔", "牛"],
+    relatedSurnames: [{ name: "孔", label: "同属子姓源流", note: "孔姓一支与宋国子姓贵族相关。" }, { name: "牛", label: "同属子姓源流", note: "牛姓部分源流归入宋国子姓系统。" }],
   },
   {
     id: "kong",
@@ -357,7 +357,7 @@ export const surnames: SurnameRecord[] = [
         summary: "常见说法以宋国孔父嘉为孔姓重要先祖。",
       },
     ],
-    relatedSurnames: ["宋", "子"],
+    relatedSurnames: [{ name: "宋", label: "宋国脉络", note: "孔姓一支与宋国贵族相关。" }, { name: "子", label: "源头姓", note: "孔姓一支归入子姓系统。" }],
   },
   {
     id: "niu",
@@ -372,7 +372,7 @@ export const surnames: SurnameRecord[] = [
         summary: "部分源流归入宋国子姓系统。",
       },
     ],
-    relatedSurnames: ["宋", "孔"],
+    relatedSurnames: [{ name: "宋", label: "宋国脉络", note: "牛姓部分源流归入宋国系统。" }, { name: "孔", label: "同属子姓源流", note: "孔姓一支与宋国子姓贵族相关。" }],
   },
   {
     id: "qin",
@@ -388,7 +388,7 @@ export const surnames: SurnameRecord[] = [
         summary: "秦国宗族及国人有以国为氏者。",
       },
     ],
-    relatedSurnames: ["赵", "梁"],
+    relatedSurnames: [{ name: "赵", label: "同属嬴姓源流", note: "秦、赵均常归入嬴姓古国支派。" }, { name: "梁", label: "同源支脉", note: "梁姓一支也与嬴姓封国相关。" }],
   },
   {
     id: "liang",
@@ -404,7 +404,7 @@ export const surnames: SurnameRecord[] = [
         summary: "梁国后裔以国名为氏。",
       },
     ],
-    relatedSurnames: ["秦", "赵"],
+    relatedSurnames: [{ name: "秦", label: "同属嬴姓源流", note: "梁姓一支与秦、赵同在嬴姓源流脉络中。" }, { name: "赵", label: "同源支脉", note: "赵姓多归入嬴姓系统。" }],
   },
   {
     id: "ma",
@@ -426,7 +426,7 @@ export const surnames: SurnameRecord[] = [
         summary: "历史上亦有复姓简化或族群融合过程中改为马姓的支流。",
       },
     ],
-    relatedSurnames: ["赵", "秦", "梁"],
+    relatedSurnames: [{ name: "赵", label: "赵氏近支", note: "马姓一支出自赵奢马服君叙事，与赵氏关系最直接。" }, { name: "秦", label: "同属嬴姓源流", note: "秦姓一支与赵氏同归嬴姓古国支派。" }, { name: "梁", label: "同源支脉", note: "梁姓一支也与嬴姓封国相关。" }],
   },
 ];
 

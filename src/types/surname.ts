@@ -22,7 +22,13 @@ export type SurnameRecord = {
   pinyin: string;
   brief: string;
   origins: OriginRecord[];
-  relatedSurnames: string[];
+  relatedSurnames: SurnameRelation[];
+};
+
+export type SurnameRelation = {
+  name: string;
+  label: string;
+  note: string;
 };
 
 export type RootGroup = {

@@ -163,12 +163,16 @@ function DetailPanel({
       </div>
 
       <div className="mt-6">
-        <div className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">相关姓氏</div>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {selected.relatedSurnames.map((name) => (
-            <span key={name} className="rounded-full border border-slate-200 px-3 py-1 text-sm text-slate-700">
-              {name}
-            </span>
+        <div className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">关系说明</div>
+        <div className="mt-3 space-y-2">
+          {selected.relatedSurnames.map((relation) => (
+            <div key={relation.name} className="rounded-lg border border-slate-200 bg-white p-3">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm font-semibold text-slate-950">{relation.name}</span>
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">{relation.label}</span>
+              </div>
+              <p className="mt-2 text-xs leading-5 text-slate-500">{relation.note}</p>
+            </div>
           ))}
         </div>
       </div>
@@ -314,7 +318,7 @@ export function SurnameOriginExplorer() {
     graph.setData(graphData);
     graph.render().then(() => {
       if (selectedSurnameId) {
-        graph.focusElement(`surname-${selectedSurnameId}`, { duration: 450 });
+        graph.fitView({ when: "always", direction: "both" }, { duration: 320 });
       }
     });
   }, [graphData, selectedSurnameId, highlightedIds]);
