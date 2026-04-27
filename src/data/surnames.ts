@@ -413,14 +413,15 @@ export const surnames: SurnameRecord[] = [
     name: "马",
     pinyin: "ma",
     brief: "马姓常见源流归入嬴姓赵氏系统，一支以赵国名将赵奢封号“马服君”为关键线索。",
+    birthplace: "扶风，约在今陕西兴平东北一带。",
     origins: [
       {
         kind: "place",
         sourceRoot: "嬴姓源流",
         period: "先秦",
-        place: "赵国马服",
+        place: "赵国邯郸马服城",
         ancestor: "赵奢",
-        summary: "赵奢因功受封马服君，其后人有以封号或封邑中的“马”为氏者。",
+        summary: "赵奢因功受封马服君，封地在赵国邯郸马服城，其后人有以封号或封邑中的“马”为氏者；后世又有迁居右扶风茂陵的支派。",
       },
       {
         kind: "ethnic-fusion",
@@ -429,6 +430,7 @@ export const surnames: SurnameRecord[] = [
       },
     ],
     relatedSurnames: [{ name: "赵", label: "相关线索", note: "马姓一支出自赵奢马服君叙事，与赵氏关系最直接。" }, { name: "秦", label: "相关线索", note: "秦姓一支与赵氏同归嬴姓古国支派。" }, { name: "梁", label: "相关线索", note: "梁姓一支也与嬴姓封国相关。" }],
+    sources: [{ title: "维基百科：马姓", url: "https://zh.wikipedia.org/wiki/%E9%A9%AC%E5%A7%93", note: "参考其关于赵奢、马服城、扶风发源地的叙述。" }],
   },
 ];
 

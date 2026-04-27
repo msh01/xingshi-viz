@@ -21,9 +21,17 @@ export type SurnameRecord = {
   name: string;
   pinyin: string;
   brief: string;
+  birthplace?: string;
   origins: OriginRecord[];
   relatedSurnames: SurnameRelation[];
   derivedSurnames?: SurnameRelation[];
+  sources?: SourceReference[];
+};
+
+export type SourceReference = {
+  title: string;
+  url: string;
+  note?: string;
 };
 
 export type SurnameRelation = {

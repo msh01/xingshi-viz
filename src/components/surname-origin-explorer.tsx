@@ -253,6 +253,12 @@ function DetailPanel({
         <span className="pb-1 font-mono text-sm text-slate-500">{selected.pinyin}</span>
       </div>
       <p className="mt-5 text-sm leading-7 text-slate-700">{selected.brief}</p>
+      {selected.birthplace ? (
+        <div className="mt-5 rounded-lg border border-orange-200 bg-orange-50 p-4">
+          <div className="text-xs font-medium uppercase tracking-[0.18em] text-orange-700">发源地</div>
+          <div className="mt-2 text-sm font-semibold leading-6 text-slate-950">{selected.birthplace}</div>
+        </div>
+      ) : null}
 
       <div className="mt-6 space-y-4">
         {selected.origins.map((origin, index) => (
@@ -285,6 +291,26 @@ function DetailPanel({
                 </div>
                 <p className="mt-2 text-xs leading-5 text-slate-500">{relation.note}</p>
               </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {selected.sources?.length ? (
+        <div className="mt-6">
+          <div className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">资料参考</div>
+          <div className="mt-3 space-y-2">
+            {selected.sources.map((source) => (
+              <a
+                key={source.url}
+                className="block rounded-lg border border-slate-200 bg-white p-3 transition hover:border-slate-300 hover:bg-slate-50"
+                href={source.url}
+                rel="noreferrer"
+                target="_blank"
+              >
+                <div className="text-sm font-semibold text-slate-950">{source.title}</div>
+                {source.note ? <p className="mt-2 text-xs leading-5 text-slate-500">{source.note}</p> : null}
+              </a>
             ))}
           </div>
         </div>
