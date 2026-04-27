@@ -273,20 +273,22 @@ function DetailPanel({
         ))}
       </div>
 
-      <div className="mt-6">
-        <div className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">关系说明</div>
-        <div className="mt-3 space-y-2">
-          {selected.relatedSurnames.map((relation) => (
-            <div key={relation.name} className="rounded-lg border border-slate-200 bg-white p-3">
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-sm font-semibold text-slate-950">{relation.name}</span>
-                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">{relation.label}</span>
+      {selected.derivedSurnames?.length ? (
+        <div className="mt-6">
+          <div className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">派生下级</div>
+          <div className="mt-3 space-y-2">
+            {selected.derivedSurnames.map((relation) => (
+              <div key={relation.name} className="rounded-lg border border-slate-200 bg-white p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm font-semibold text-slate-950">{relation.name}</span>
+                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">{relation.label}</span>
+                </div>
+                <p className="mt-2 text-xs leading-5 text-slate-500">{relation.note}</p>
               </div>
-              <p className="mt-2 text-xs leading-5 text-slate-500">{relation.note}</p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      ) : null}
     </aside>
   );
 }

@@ -23,6 +23,7 @@ export type SurnameRecord = {
   brief: string;
   origins: OriginRecord[];
   relatedSurnames: SurnameRelation[];
+  derivedSurnames?: SurnameRelation[];
 };
 
 export type SurnameRelation = {

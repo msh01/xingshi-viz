@@ -85,6 +85,17 @@ function addEdge(edges: Map<string, VizEdge>, edge: VizEdge) {
   if (!edges.has(edge.id)) edges.set(edge.id, edge);
 }
 
+function getDerivedRecords(surname: SurnameRecord) {
+  return (surname.derivedSurnames ?? [])
+    .map((relation) => ({
+      relation,
+      surname: surnames.find((item) => item.name === relation.name),
+    }))
+    .filter((item): item is { relation: NonNullable<SurnameRecord["derivedSurnames"]>[number]; surname: SurnameRecord } =>
+      Boolean(item.surname),
+    );
+}
+
 function placeOnArc(index: number, total: number, centerX: number, centerY: number, radius: number, start = -120, span = 240) {
   const step = total > 1 ? span / (total - 1) : 0;
   const angle = ((start + step * index) * Math.PI) / 180;
@@ -154,9 +165,9 @@ function assignStablePositions(nodes: VizNode[], edges: VizEdge[], selectedSurna
         node.style = placeOnArc(index, detailLayout.length, 720, 360, 165, -150, 300);
       });
 
-      const relatedNodes = surnameNodes.filter((node) => node.id !== selectedNode.id && adjacency.get(node.id)?.includes(selectedNode.id));
-      relatedNodes.forEach((node, index) => {
-        node.style = placeOnArc(index, relatedNodes.length, 720, 360, 255, 42, 96);
+      const connectedSurnameNodes = surnameNodes.filter((node) => node.id !== selectedNode.id && adjacency.get(node.id)?.includes(selectedNode.id));
+      connectedSurnameNodes.forEach((node, index) => {
+        node.style = placeOnArc(index, connectedSurnameNodes.length, 720, 360, 255, 42, 96);
       });
     }
   }
@@ -297,29 +308,6 @@ function addSurnamePath(
     }
   });
 
-  if (selectedId === surname.id) {
-    surname.relatedSurnames.forEach((relation) => {
-      const related = surnames.find((item) => item.name === relation.name);
-      if (!related) return;
-
-      const relatedNodeId = `surname-${related.id}`;
-      addNode(nodes, {
-        id: relatedNodeId,
-        data: {
-          label: related.name,
-          kind: "surname",
-          description: related.brief,
-          surnameId: related.id,
-        },
-      });
-      addEdge(edges, {
-        id: `${surnameNodeId}-${relatedNodeId}-related`,
-        source: surnameNodeId,
-        target: relatedNodeId,
-        data: { label: relation.label },
-      });
-    });
-  }
 }
 
 function buildSelectedSurnameGraph(selected: SurnameRecord): VizGraphData {
@@ -458,31 +446,45 @@ function buildSelectedSurnameGraph(selected: SurnameRecord): VizGraphData {
     }
   });
 
-  const relatedRecords = selected.relatedSurnames
-    .map((relation) => ({
-      relation,
-      surname: surnames.find((surname) => surname.name === relation.name),
-    }))
-    .filter((item): item is { relation: (typeof selected.relatedSurnames)[number]; surname: SurnameRecord } =>
-      Boolean(item.surname),
-    );
-  relatedRecords.forEach(({ relation, surname: related }, index) => {
-    const relatedNodeId = `surname-${related.id}`;
+  const derivedRecords = getDerivedRecords(selected);
+  derivedRecords.forEach(({ relation, surname: derived }, index) => {
+    const derivedNodeId = `surname-${derived.id}`;
     addNode(nodes, {
-      id: relatedNodeId,
-      style: placeOnArc(index, relatedRecords.length, 1085, 360, 130, -70, 140),
+      id: derivedNodeId,
+      style: placeOnArc(index, derivedRecords.length, 1085, 360, 130, -70, 140),
       data: {
-        label: related.name,
+        label: derived.name,
         kind: "surname",
-        description: related.brief,
-        surnameId: related.id,
+        description: derived.brief,
+        surnameId: derived.id,
       },
     });
     addEdge(edges, {
-      id: `${surnameNodeId}-${relatedNodeId}-related`,
+      id: `${surnameNodeId}-${derivedNodeId}-derived`,
       source: surnameNodeId,
-      target: relatedNodeId,
+      target: derivedNodeId,
       data: { label: relation.label },
+    });
+
+    const secondLevelRecords = getDerivedRecords(derived);
+    secondLevelRecords.forEach(({ relation: secondRelation, surname: secondLevel }, secondIndex) => {
+      const secondLevelNodeId = `surname-${secondLevel.id}`;
+      addNode(nodes, {
+        id: secondLevelNodeId,
+        style: placeOnArc(secondIndex, secondLevelRecords.length, 1295, derivedRecords.length > 1 ? 300 + index * 120 : 360, 90, -55, 110),
+        data: {
+          label: secondLevel.name,
+          kind: "surname",
+          description: secondLevel.brief,
+          surnameId: secondLevel.id,
+        },
+      });
+      addEdge(edges, {
+        id: `${derivedNodeId}-${secondLevelNodeId}-derived`,
+        source: derivedNodeId,
+        target: secondLevelNodeId,
+        data: { label: secondRelation.label },
+      });
     });
   });
 
