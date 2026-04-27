@@ -2,7 +2,7 @@
 
 import { Search, LocateFixed, RotateCcw, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { originTypes, rootGroups, surnameById, surnames } from "@/data/surnames";
+import { originTypes, surnameById, surnames } from "@/data/surnames";
 import { buildGraphData, findSurnameByQuery, originTypeLabels, type VizGraphData } from "@/lib/graph-data";
 import type { SurnameRecord } from "@/types/surname";
 import type { IEvent } from "@antv/g6";
@@ -70,6 +70,109 @@ const nodePalette = {
     size: 46,
   },
 };
+
+const hundredFamilySurnames = [
+  "赵",
+  "钱",
+  "孙",
+  "李",
+  "周",
+  "吴",
+  "郑",
+  "王",
+  "冯",
+  "陈",
+  "褚",
+  "卫",
+  "蒋",
+  "沈",
+  "韩",
+  "杨",
+  "朱",
+  "秦",
+  "尤",
+  "许",
+  "何",
+  "吕",
+  "施",
+  "张",
+  "孔",
+  "曹",
+  "严",
+  "华",
+  "金",
+  "魏",
+  "陶",
+  "姜",
+  "戚",
+  "谢",
+  "邹",
+  "喻",
+  "柏",
+  "水",
+  "窦",
+  "章",
+  "云",
+  "苏",
+  "潘",
+  "葛",
+  "奚",
+  "范",
+  "彭",
+  "郎",
+  "鲁",
+  "韦",
+  "昌",
+  "马",
+  "苗",
+  "凤",
+  "花",
+  "方",
+  "俞",
+  "任",
+  "袁",
+  "柳",
+  "酆",
+  "鲍",
+  "史",
+  "唐",
+  "费",
+  "廉",
+  "岑",
+  "薛",
+  "雷",
+  "贺",
+  "倪",
+  "汤",
+  "滕",
+  "殷",
+  "罗",
+  "毕",
+  "郝",
+  "邬",
+  "安",
+  "常",
+  "乐",
+  "于",
+  "时",
+  "傅",
+  "皮",
+  "卞",
+  "齐",
+  "康",
+  "伍",
+  "余",
+  "元",
+  "卜",
+  "顾",
+  "孟",
+  "平",
+  "黄",
+  "和",
+  "穆",
+  "萧",
+  "尹",
+];
 
 function getNodeMeta(id: string) {
   if (id.startsWith("surname-")) {
@@ -203,6 +306,7 @@ export function SurnameOriginExplorer() {
   const selectedSurname = selectedSurnameId ? surnameById.get(selectedSurnameId) : undefined;
   const searchResults = useMemo(() => findSurnameByQuery(query).slice(0, 7), [query]);
   const highlightedIds = useMemo(() => selectedPathIds(graphData, selectedSurnameId), [graphData, selectedSurnameId]);
+  const surnameByName = useMemo(() => new Map(surnames.map((surname) => [surname.name, surname])), []);
 
   const focusSurname = useCallback((surname: SurnameRecord) => {
     setSelectedSurnameId(surname.id);
@@ -408,24 +512,43 @@ export function SurnameOriginExplorer() {
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
-          <div className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">高层结构</div>
-          <div className="mt-3 space-y-2">
-            {rootGroups.map((root) => (
-              <button
-                key={root.id}
-                type="button"
-                onClick={() => toggleExpansion(root.id)}
-                className="w-full rounded-lg border border-slate-200 bg-white p-3 text-left transition hover:border-violet-300 hover:bg-violet-50"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-medium text-slate-900">{root.name}</span>
-                  <span className="rounded-full bg-slate-100 px-2 py-0.5 font-mono text-xs text-slate-500">
-                    {root.surnameIds.length}
-                  </span>
-                </div>
-                <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">{root.description}</p>
-              </button>
-            ))}
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">百家姓入口</div>
+            <span className="font-mono text-xs text-slate-400">{hundredFamilySurnames.length}</span>
+          </div>
+          <div className="mt-3 grid grid-cols-4 gap-2">
+            {hundredFamilySurnames.map((name, index) => {
+              const surname = surnameByName.get(name);
+              const isSelected = selectedSurname?.name === name;
+
+              return (
+                <button
+                  key={`${name}-${index}`}
+                  type="button"
+                  onClick={() => {
+                    if (surname) {
+                      focusSurname(surname);
+                      return;
+                    }
+
+                    setSelectedSurnameId(undefined);
+                    setActiveNodeLabel(`${name}姓`);
+                    setQuery(name);
+                  }}
+                  className={`flex h-12 flex-col items-center justify-center rounded-md border text-center transition ${
+                    isSelected
+                      ? "border-slate-950 bg-slate-950 text-white"
+                      : surname
+                        ? "border-slate-200 bg-white text-slate-900 hover:border-violet-300 hover:bg-violet-50"
+                        : "border-slate-200 bg-slate-50 text-slate-400 hover:border-slate-300 hover:bg-white"
+                  }`}
+                  title={surname ? `${name}姓详情` : `${name}姓资料待补充`}
+                >
+                  <span className="text-base font-semibold leading-none">{name}</span>
+                  {surname ? null : <span className="mt-1 text-[10px] leading-none">待补</span>}
+                </button>
+              );
+            })}
           </div>
 
           <div className="mt-6 text-xs font-medium uppercase tracking-[0.18em] text-slate-400">起源类型</div>
