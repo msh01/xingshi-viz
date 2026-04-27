@@ -38,5 +38,4 @@ export type OriginTypeGroup = {
   description: string;
 };
 
-export type GraphNodeKind = "root" | "originType" | "period" | "region" | "surname";
-
+export type GraphNodeKind = "root" | "originType" | "period" | "region" | "person" | "originDetail" | "surname";

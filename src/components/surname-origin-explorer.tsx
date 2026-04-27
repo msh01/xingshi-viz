@@ -21,6 +21,9 @@ type GraphNodeDatum = {
 };
 type GraphEdgeDatum = {
   id?: string;
+  data?: {
+    label?: string;
+  };
 };
 
 const nodePalette = {
@@ -41,6 +44,18 @@ const nodePalette = {
     stroke: "#334155",
     text: "#ffffff",
     size: 54,
+  },
+  originDetail: {
+    fill: "#f97316",
+    stroke: "#c2410c",
+    text: "#ffffff",
+    size: 62,
+  },
+  person: {
+    fill: "#2563eb",
+    stroke: "#1d4ed8",
+    text: "#ffffff",
+    size: 50,
   },
   region: {
     fill: "#15803d",
@@ -84,13 +99,19 @@ function selectedPathIds(data: VizGraphData, selectedSurnameId?: string) {
 
   const target = `surname-${selectedSurnameId}`;
   const ids = new Set<string>([target]);
+  const detailPrefix = `detail-${selectedSurnameId}-`;
+
   data.edges.forEach((edge) => {
-    if (edge.source === target || edge.target === target) {
+    const touchesTarget = edge.source === target || edge.target === target;
+    const touchesDetail = edge.source.startsWith(detailPrefix) || edge.target.startsWith(detailPrefix);
+
+    if (touchesTarget || touchesDetail) {
       ids.add(edge.source);
       ids.add(edge.target);
       ids.add(edge.id);
     }
   });
+
   return ids;
 }
 
@@ -223,7 +244,7 @@ export function SurnameOriginExplorer() {
               opacity: isDimmed ? 0.26 : 1,
               labelText: datum.data?.label,
               labelFill: palette.text,
-              labelFontSize: kind === "surname" ? 18 : 12,
+              labelFontSize: kind === "surname" ? 18 : kind === "originDetail" ? 13 : 12,
               labelFontWeight: 700,
               labelPlacement: "center",
               cursor: "pointer",
@@ -242,6 +263,12 @@ export function SurnameOriginExplorer() {
               lineWidth: isHighlighted ? 2.5 : 1.2,
               opacity: isDimmed ? 0.14 : 0.72,
               endArrow: true,
+              labelText: isHighlighted ? datum.data?.label : undefined,
+              labelFill: "#475569",
+              labelFontSize: 11,
+              labelBackground: true,
+              labelBackgroundFill: "#ffffff",
+              labelBackgroundOpacity: 0.86,
             };
           },
         },

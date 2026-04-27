@@ -17,7 +17,7 @@ export const rootGroups: RootGroup[] = [
     id: "root-ying",
     name: "嬴姓源流",
     description: "秦、赵等古国宗族相关支派，常见于先秦封国脉络。",
-    surnameIds: ["zhao", "qin", "liang"],
+    surnameIds: ["zhao", "qin", "liang", "ma"],
   },
   {
     id: "root-zi",
@@ -405,6 +405,28 @@ export const surnames: SurnameRecord[] = [
       },
     ],
     relatedSurnames: ["秦", "赵"],
+  },
+  {
+    id: "ma",
+    name: "马",
+    pinyin: "ma",
+    brief: "马姓常见源流归入嬴姓赵氏系统，一支以赵国名将赵奢封号“马服君”为关键线索。",
+    origins: [
+      {
+        kind: "place",
+        sourceRoot: "嬴姓源流",
+        period: "先秦",
+        place: "赵国马服",
+        ancestor: "赵奢",
+        summary: "赵奢因功受封马服君，其后人有以封号或封邑中的“马”为氏者。",
+      },
+      {
+        kind: "ethnic-fusion",
+        period: "魏晋南北朝",
+        summary: "历史上亦有复姓简化或族群融合过程中改为马姓的支流。",
+      },
+    ],
+    relatedSurnames: ["赵", "秦", "梁"],
   },
 ];
 

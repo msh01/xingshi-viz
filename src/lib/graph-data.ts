@@ -13,6 +13,7 @@ export type VizNode = {
     description?: string;
     surnameId?: string;
     count?: number;
+    originIndex?: number;
   };
 };
 
@@ -94,11 +95,12 @@ function placeOnArc(index: number, total: number, centerX: number, centerY: numb
   };
 }
 
-function assignStablePositions(nodes: VizNode[], edges: VizEdge[]) {
+function assignStablePositions(nodes: VizNode[], edges: VizEdge[], selectedSurnameId?: string) {
   const rootNodes = nodes.filter((node) => node.data.kind === "root");
   const typeNodes = nodes.filter((node) => node.data.kind === "originType");
   const periodNodes = nodes.filter((node) => node.data.kind === "period");
   const surnameNodes = nodes.filter((node) => node.data.kind === "surname");
+  const detailNodes = nodes.filter((node) => ["originDetail", "person", "region"].includes(node.data.kind));
 
   rootNodes.forEach((node, index) => {
     node.style = placeOnArc(index, rootNodes.length, 390, 360, 250, 142, 76);
@@ -141,6 +143,23 @@ function assignStablePositions(nodes: VizNode[], edges: VizEdge[]) {
   floatingSurnames.forEach((node, index) => {
     node.style = placeOnArc(index, floatingSurnames.length, 690, 650, 165, 190, 160);
   });
+
+  if (selectedSurnameId) {
+    const selectedNode = nodes.find((node) => node.id === `surname-${selectedSurnameId}`);
+    if (selectedNode) {
+      selectedNode.style = { x: 720, y: 360 };
+
+      const detailLayout = detailNodes.filter((node) => node.id.startsWith(`detail-${selectedSurnameId}-`));
+      detailLayout.forEach((node, index) => {
+        node.style = placeOnArc(index, detailLayout.length, 720, 360, 165, -150, 300);
+      });
+
+      const relatedNodes = surnameNodes.filter((node) => node.id !== selectedNode.id && adjacency.get(node.id)?.includes(selectedNode.id));
+      relatedNodes.forEach((node, index) => {
+        node.style = placeOnArc(index, relatedNodes.length, 720, 360, 255, 42, 96);
+      });
+    }
+  }
 }
 
 function addSurnamePath(
@@ -189,6 +208,92 @@ function addSurnamePath(
         target: surnameNodeId,
         data: { label: "时代" },
       });
+    }
+
+    if (selectedId === surname.id) {
+      const originNodeId = `detail-${surname.id}-${index}-origin`;
+      const originLabel = origin.place ?? origin.ancestor ?? originTypeLabels[origin.kind];
+      addNode(nodes, {
+        id: originNodeId,
+        data: {
+          label: originLabel,
+          kind: "originDetail",
+          description: origin.summary,
+          originIndex: index,
+        },
+      });
+
+      addEdge(edges, {
+        id: `${originNodeId}-${surnameNodeId}`,
+        source: originNodeId,
+        target: surnameNodeId,
+        data: { label: index === 0 ? "主要来源" : "支流" },
+      });
+      addEdge(edges, {
+        id: `${typeNodeId}-${originNodeId}`,
+        source: typeNodeId,
+        target: originNodeId,
+        data: { label: originTypeLabels[origin.kind] },
+      });
+
+      if (origin.sourceRoot) {
+        const root = rootGroups.find((group) => group.name === origin.sourceRoot);
+        if (root) {
+          addEdge(edges, {
+            id: `${root.id}-${originNodeId}`,
+            source: root.id,
+            target: originNodeId,
+            data: { label: "源流" },
+          });
+        }
+      }
+
+      if (period) {
+        addEdge(edges, {
+          id: `${period.id}-${originNodeId}`,
+          source: period.id,
+          target: originNodeId,
+          data: { label: "时代" },
+        });
+      }
+
+      if (origin.ancestor) {
+        const personNodeId = `detail-${surname.id}-${index}-person`;
+        addNode(nodes, {
+          id: personNodeId,
+          data: {
+            label: origin.ancestor,
+            kind: "person",
+            description: "起源叙事中的关键人物。",
+            originIndex: index,
+          },
+        });
+        addEdge(edges, {
+          id: `${personNodeId}-${originNodeId}`,
+          source: personNodeId,
+          target: originNodeId,
+          data: { label: "人物" },
+        });
+      }
+
+      if (origin.place) {
+        const placeNodeId = `detail-${surname.id}-${index}-place`;
+        addNode(nodes, {
+          id: placeNodeId,
+          data: {
+            label: origin.place,
+            kind: "region",
+            description: "起源叙事中的地望或封邑。",
+            originIndex: index,
+          },
+        });
+        addEdge(edges, {
+          id: `${placeNodeId}-${originNodeId}`,
+          source: placeNodeId,
+          target: originNodeId,
+          data: { label: "地望" },
+        });
+      }
     }
   });
 
@@ -310,7 +415,7 @@ export function buildGraphData(expandedIds: string[], selectedSurnameId?: string
 
   const graphNodes = Array.from(nodes.values());
   const graphEdges = Array.from(edges.values());
-  assignStablePositions(graphNodes, graphEdges);
+  assignStablePositions(graphNodes, graphEdges, selectedSurnameId);
 
   return {
     nodes: graphNodes,
