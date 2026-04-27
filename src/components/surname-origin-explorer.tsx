@@ -115,6 +115,14 @@ function selectedPathIds(data: VizGraphData, selectedSurnameId?: string) {
   return ids;
 }
 
+function GitHubMark({ className }: { className?: string }) {
+  return (
+    <svg aria-hidden="true" className={className} fill="currentColor" viewBox="0 0 24 24">
+      <path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.52 2.86 8.35 6.84 9.7.5.1.68-.22.68-.5v-1.74c-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.5-1.11-1.5-.91-.63.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.04 1.03-2.76-.1-.26-.45-1.31.1-2.72 0 0 .84-.28 2.75 1.05A9.34 9.34 0 0 1 12 6.91c.85 0 1.7.12 2.5.35 1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.46.1 2.72.64.72 1.03 1.64 1.03 2.76 0 3.94-2.34 4.81-4.57 5.06.36.32.68.94.68 1.9v2.8c0 .28.18.6.69.5A10.16 10.16 0 0 0 22 12.25C22 6.58 17.52 2 12 2Z" />
+    </svg>
+  );
+}
+
 function DetailPanel({
   selected,
   fallbackTitle,
@@ -335,8 +343,22 @@ export function SurnameOriginExplorer() {
     <main className="flex h-screen min-h-[720px] bg-slate-100 text-slate-950">
       <section className="flex w-[310px] min-w-[310px] flex-col border-r border-slate-200 bg-white">
         <div className="border-b border-slate-200 px-5 py-5">
-          <div className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">姓氏图谱</div>
-          <h1 className="mt-2 text-2xl font-semibold text-slate-950">百家姓起源探索</h1>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">姓氏图谱</div>
+              <h1 className="mt-2 text-2xl font-semibold text-slate-950">百家姓起源探索</h1>
+            </div>
+            <a
+              aria-label="打开 GitHub 仓库"
+              className="grid size-9 shrink-0 place-items-center rounded-md border border-slate-200 bg-white text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950"
+              href="https://github.com/msh01/xingshi-viz"
+              rel="noreferrer"
+              target="_blank"
+              title="GitHub 仓库"
+            >
+              <GitHubMark className="size-4" />
+            </a>
+          </div>
         </div>
 
         <div className="border-b border-slate-200 px-5 py-4">
