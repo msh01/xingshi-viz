@@ -27,13 +27,13 @@
 安装依赖：
 
 ```bash
-npm install
+bun install
 ```
 
 启动开发服务：
 
 ```bash
-npm run dev
+bun dev
 ```
 
 打开：
@@ -45,13 +45,13 @@ http://127.0.0.1:4222
 构建生产版本：
 
 ```bash
-npm run build
+bun run build
 ```
 
 启动生产服务：
 
 ```bash
-npm run start
+bun start
 ```
 
 ## 项目结构
