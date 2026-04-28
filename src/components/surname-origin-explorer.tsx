@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, LocateFixed, RotateCcw, X } from "lucide-react";
+import { LocateFixed, RotateCcw, Search, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { originTypes, surnameById, surnames } from "@/data/surnames";
 import { buildGraphData, findSurnameByQuery, originTypeLabels, type VizGraphData } from "@/lib/graph-data";
@@ -17,13 +17,27 @@ type GraphNodeDatum = {
   data?: {
     kind?: keyof typeof nodePalette;
     label?: string;
+    role?: "selected" | "related" | "derived" | "secondLevel";
   };
 };
 type GraphEdgeDatum = {
   id?: string;
   data?: {
     label?: string;
+    tone?: "source" | "type" | "period" | "place" | "person" | "primary" | "related" | "derived";
+    focus?: boolean;
   };
+};
+
+const edgePalette = {
+  source: "#7c3aed",
+  type: "#0f766e",
+  period: "#475569",
+  place: "#15803d",
+  person: "#2563eb",
+  primary: "#f97316",
+  related: "#dc2626",
+  derived: "#0891b2",
 };
 
 const nodePalette = {
@@ -208,7 +222,7 @@ function selectedPathIds(data: VizGraphData, selectedSurnameId?: string) {
     const touchesTarget = edge.source === target || edge.target === target;
     const touchesDetail = edge.source.startsWith(detailPrefix) || edge.target.startsWith(detailPrefix);
 
-    if (touchesTarget || touchesDetail) {
+    if (touchesTarget || touchesDetail || edge.data?.focus) {
       ids.add(edge.source);
       ids.add(edge.target);
       ids.add(edge.id);
@@ -229,9 +243,11 @@ function GitHubMark({ className }: { className?: string }) {
 function DetailPanel({
   selected,
   fallbackTitle,
+  onFocusSurname,
 }: {
   selected?: SurnameRecord;
   fallbackTitle: string;
+  onFocusSurname: (surname: SurnameRecord) => void;
 }) {
   if (!selected) {
     return (
@@ -239,7 +255,8 @@ function DetailPanel({
         <div className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">当前焦点</div>
         <h2 className="mt-3 text-2xl font-semibold text-slate-950">{fallbackTitle}</h2>
         <p className="mt-4 text-sm leading-7 text-slate-600">
-          默认只展示高层结构。点击“姬姓源流”“封地得姓”等节点会展开代表姓氏；搜索姓氏会自动补齐它的起源路径。
+          这张图的重点不是替代百科条目，而是把“源流、形成机制、时代、地望、人物、派生关系”放在同一张关系网里读。
+          选择一个姓氏后，右侧会给出它的路径读法、相似姓氏和对比视角。
         </p>
       </aside>
     );
@@ -278,6 +295,35 @@ function DetailPanel({
           </section>
         ))}
       </div>
+
+      {selected.relatedSurnames.length ? (
+        <div className="mt-6">
+          <div className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">图中相关姓氏</div>
+          <div className="mt-3 space-y-2">
+            {selected.relatedSurnames.map((relation) => {
+              const related = surnames.find((surname) => surname.name === relation.name);
+
+              return (
+                <button
+                  key={relation.name}
+                  type="button"
+                  onClick={() => {
+                    if (related) onFocusSurname(related);
+                  }}
+                  className="block w-full rounded-lg border border-slate-200 bg-white p-3 text-left transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-default disabled:opacity-70"
+                  disabled={!related}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-sm font-semibold text-slate-950">{relation.name}</span>
+                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">{relation.label}</span>
+                  </div>
+                  <p className="mt-2 text-xs leading-5 text-slate-500">{relation.note}</p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
 
       {selected.derivedSurnames?.length ? (
         <div className="mt-6">
@@ -377,17 +423,19 @@ export function SurnameOriginExplorer() {
             const currentHighlighted = highlightedIdsRef.current;
             const isSelected = currentSelected && datum.id === `surname-${currentSelected}`;
             const isDimmed = currentHighlighted.size > 0 && (!datum.id || !currentHighlighted.has(datum.id));
+            const role = datum.data?.role;
+            const roleSize = role === "related" ? 54 : role === "derived" ? 52 : role === "secondLevel" ? 42 : palette.size;
 
             return {
               x: datum.style?.x,
               y: datum.style?.y,
-              size: isSelected ? palette.size + 10 : palette.size,
-              fill: palette.fill,
-              stroke: isSelected ? "#f97316" : palette.stroke,
-              lineWidth: isSelected ? 4 : 2,
+              size: isSelected ? palette.size + 14 : roleSize,
+              fill: role === "related" ? "#fff7ed" : role === "derived" ? "#ecfeff" : palette.fill,
+              stroke: isSelected ? "#f97316" : role === "related" ? "#dc2626" : role === "derived" ? "#0891b2" : palette.stroke,
+              lineWidth: isSelected || role === "related" || role === "derived" ? 3 : 2,
               opacity: isDimmed ? 0.26 : 1,
               labelText: datum.data?.label,
-              labelFill: palette.text,
+              labelFill: role === "related" || role === "derived" ? "#0f172a" : palette.text,
               labelFontSize: kind === "surname" ? 18 : kind === "originDetail" ? 13 : 12,
               labelFontWeight: 700,
               labelPlacement: "center",
@@ -401,10 +449,12 @@ export function SurnameOriginExplorer() {
             const currentHighlighted = highlightedIdsRef.current;
             const isHighlighted = datum.id ? currentHighlighted.has(datum.id) : false;
             const isDimmed = currentHighlighted.size > 0 && !isHighlighted;
+            const tone = datum.data?.tone;
+            const stroke = tone ? edgePalette[tone] : "#94a3b8";
 
             return {
-              stroke: isHighlighted ? "#f97316" : "#94a3b8",
-              lineWidth: isHighlighted ? 2.5 : 1.2,
+              stroke: isHighlighted ? stroke : "#94a3b8",
+              lineWidth: isHighlighted ? (tone === "related" || tone === "derived" ? 3 : 2.4) : 1.2,
               opacity: isDimmed ? 0.14 : 0.72,
               endArrow: true,
               labelText: isHighlighted ? datum.data?.label : undefined,
@@ -624,7 +674,11 @@ export function SurnameOriginExplorer() {
       </section>
 
       <div className="w-[360px] min-w-[360px]">
-        <DetailPanel selected={selectedSurname} fallbackTitle={activeNodeLabel} />
+        <DetailPanel
+          selected={selectedSurname}
+          fallbackTitle={activeNodeLabel}
+          onFocusSurname={focusSurname}
+        />
       </div>
     </main>
   );

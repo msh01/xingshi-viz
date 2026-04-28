@@ -14,6 +14,7 @@ export type VizNode = {
     surnameId?: string;
     count?: number;
     originIndex?: number;
+    role?: "selected" | "related" | "derived" | "secondLevel";
   };
 };
 
@@ -23,6 +24,8 @@ export type VizEdge = {
   target: string;
   data?: {
     label?: string;
+    tone?: "source" | "type" | "period" | "place" | "person" | "primary" | "related" | "derived";
+    focus?: boolean;
   };
 };
 
@@ -94,6 +97,29 @@ function getDerivedRecords(surname: SurnameRecord) {
     .filter((item): item is { relation: NonNullable<SurnameRecord["derivedSurnames"]>[number]; surname: SurnameRecord } =>
       Boolean(item.surname),
     );
+}
+
+function getRelatedRecords(surname: SurnameRecord) {
+  return surname.relatedSurnames
+    .map((relation) => ({
+      relation,
+      surname: surnames.find((item) => item.name === relation.name),
+    }))
+    .filter((item): item is { relation: SurnameRecord["relatedSurnames"][number]; surname: SurnameRecord } =>
+      Boolean(item.surname),
+    );
+}
+
+function sharedOriginReasons(left: SurnameRecord, right: SurnameRecord) {
+  const leftRoots = new Set(left.origins.map((origin) => origin.sourceRoot).filter(Boolean));
+  const leftKinds = new Set(left.origins.map((origin) => origin.kind));
+  const leftPeriods = new Set(left.origins.map((origin) => origin.period));
+
+  return {
+    roots: unique(right.origins.map((origin) => origin.sourceRoot).filter((root): root is string => Boolean(root && leftRoots.has(root)))),
+    kinds: unique(right.origins.map((origin) => origin.kind).filter((kind) => leftKinds.has(kind))),
+    periods: unique(right.origins.map((origin) => origin.period).filter((period) => leftPeriods.has(period))),
+  };
 }
 
 function placeOnArc(index: number, total: number, centerX: number, centerY: number, radius: number, start = -120, span = 240) {
@@ -192,12 +218,12 @@ function addSurnamePath(
 
   surname.origins.forEach((origin, index) => {
     const typeNodeId = `type-${origin.kind}`;
-    addEdge(edges, {
-      id: `${typeNodeId}-${surnameNodeId}-${index}`,
-      source: typeNodeId,
-      target: surnameNodeId,
-      data: { label: originTypeLabels[origin.kind] },
-    });
+      addEdge(edges, {
+        id: `${typeNodeId}-${surnameNodeId}-${index}`,
+        source: typeNodeId,
+        target: surnameNodeId,
+        data: { label: originTypeLabels[origin.kind], tone: "type" },
+      });
 
     if (origin.sourceRoot) {
       const root = rootGroups.find((group) => group.name === origin.sourceRoot);
@@ -206,7 +232,7 @@ function addSurnamePath(
           id: `${root.id}-${surnameNodeId}-${index}`,
           source: root.id,
           target: surnameNodeId,
-          data: { label: "源流" },
+          data: { label: "源流", tone: "source" },
         });
       }
     }
@@ -217,7 +243,7 @@ function addSurnamePath(
         id: `${period.id}-${surnameNodeId}-${index}`,
         source: period.id,
         target: surnameNodeId,
-        data: { label: "时代" },
+        data: { label: "时代", tone: "period" },
       });
     }
 
@@ -238,13 +264,13 @@ function addSurnamePath(
         id: `${originNodeId}-${surnameNodeId}`,
         source: originNodeId,
         target: surnameNodeId,
-        data: { label: index === 0 ? "主要来源" : "支流" },
+        data: { label: index === 0 ? "主要来源" : "支流", tone: "primary", focus: true },
       });
       addEdge(edges, {
         id: `${typeNodeId}-${originNodeId}`,
         source: typeNodeId,
         target: originNodeId,
-        data: { label: originTypeLabels[origin.kind] },
+        data: { label: originTypeLabels[origin.kind], tone: "type", focus: true },
       });
 
       if (origin.sourceRoot) {
@@ -254,7 +280,7 @@ function addSurnamePath(
             id: `${root.id}-${originNodeId}`,
             source: root.id,
             target: originNodeId,
-            data: { label: "源流" },
+            data: { label: "源流", tone: "source", focus: true },
           });
         }
       }
@@ -264,7 +290,7 @@ function addSurnamePath(
           id: `${period.id}-${originNodeId}`,
           source: period.id,
           target: originNodeId,
-          data: { label: "时代" },
+          data: { label: "时代", tone: "period", focus: true },
         });
       }
 
@@ -283,7 +309,7 @@ function addSurnamePath(
           id: `${personNodeId}-${originNodeId}`,
           source: personNodeId,
           target: originNodeId,
-          data: { label: "人物" },
+          data: { label: "人物", tone: "person", focus: true },
         });
       }
 
@@ -302,7 +328,7 @@ function addSurnamePath(
           id: `${placeNodeId}-${originNodeId}`,
           source: placeNodeId,
           target: originNodeId,
-          data: { label: "地望" },
+          data: { label: "地望", tone: "place", focus: true },
         });
       }
     }
@@ -325,6 +351,7 @@ function buildSelectedSurnameGraph(selected: SurnameRecord): VizGraphData {
       kind: "surname",
       description: selected.brief,
       surnameId: selected.id,
+      role: "selected",
     },
   });
 
@@ -350,7 +377,7 @@ function buildSelectedSurnameGraph(selected: SurnameRecord): VizGraphData {
         id: `${root.id}-${originNodeId}`,
         source: root.id,
         target: originNodeId,
-        data: { label: "源流" },
+        data: { label: "源流", tone: "source", focus: true },
       });
     }
 
@@ -367,7 +394,7 @@ function buildSelectedSurnameGraph(selected: SurnameRecord): VizGraphData {
       id: `${typeNodeId}-${originNodeId}`,
       source: typeNodeId,
       target: originNodeId,
-      data: { label: "类型" },
+      data: { label: "类型", tone: "type", focus: true },
     });
 
     if (period) {
@@ -384,7 +411,7 @@ function buildSelectedSurnameGraph(selected: SurnameRecord): VizGraphData {
         id: `${period.id}-${originNodeId}`,
         source: period.id,
         target: originNodeId,
-        data: { label: "时代" },
+        data: { label: "时代", tone: "period", focus: true },
       });
     }
 
@@ -402,7 +429,7 @@ function buildSelectedSurnameGraph(selected: SurnameRecord): VizGraphData {
       id: `${originNodeId}-${surnameNodeId}`,
       source: originNodeId,
       target: surnameNodeId,
-      data: { label: index === 0 ? "主要来源" : "支流" },
+      data: { label: index === 0 ? "主要来源" : "支流", tone: "primary", focus: true },
     });
 
     if (origin.ancestor) {
@@ -421,7 +448,7 @@ function buildSelectedSurnameGraph(selected: SurnameRecord): VizGraphData {
         id: `${personNodeId}-${originNodeId}`,
         source: personNodeId,
         target: originNodeId,
-        data: { label: "人物" },
+        data: { label: "人物", tone: "person", focus: true },
       });
     }
 
@@ -441,9 +468,63 @@ function buildSelectedSurnameGraph(selected: SurnameRecord): VizGraphData {
         id: `${placeNodeId}-${originNodeId}`,
         source: placeNodeId,
         target: originNodeId,
-        data: { label: "地望" },
+        data: { label: "地望", tone: "place", focus: true },
       });
     }
+  });
+
+  const relatedRecords = getRelatedRecords(selected);
+  relatedRecords.forEach(({ relation, surname: related }, index) => {
+    const relatedNodeId = `surname-${related.id}`;
+    const shared = sharedOriginReasons(selected, related);
+    addNode(nodes, {
+      id: relatedNodeId,
+      style: placeOnArc(index, relatedRecords.length, 1090, 360, 210, -70, 140),
+      data: {
+        label: related.name,
+        kind: "surname",
+        description: related.brief,
+        surnameId: related.id,
+        role: "related",
+      },
+    });
+    addEdge(edges, {
+      id: `${surnameNodeId}-${relatedNodeId}-related`,
+      source: surnameNodeId,
+      target: relatedNodeId,
+      data: { label: relation.label, tone: "related", focus: true },
+    });
+
+    shared.roots.forEach((rootName) => {
+      const root = rootGroups.find((group) => group.name === rootName);
+      if (!root) return;
+      addEdge(edges, {
+        id: `${root.id}-${relatedNodeId}-shared`,
+        source: root.id,
+        target: relatedNodeId,
+        data: { label: "同源流", tone: "source", focus: true },
+      });
+    });
+
+    shared.kinds.forEach((kind) => {
+      addEdge(edges, {
+        id: `type-${kind}-${relatedNodeId}-shared`,
+        source: `type-${kind}`,
+        target: relatedNodeId,
+        data: { label: "同类型", tone: "type", focus: true },
+      });
+    });
+
+    shared.periods.forEach((periodName) => {
+      const period = periodGroups.find((group) => group.periods.includes(periodName));
+      if (!period) return;
+      addEdge(edges, {
+        id: `${period.id}-${relatedNodeId}-shared`,
+        source: period.id,
+        target: relatedNodeId,
+        data: { label: "同时代", tone: "period", focus: true },
+      });
+    });
   });
 
   const derivedRecords = getDerivedRecords(selected);
@@ -457,13 +538,14 @@ function buildSelectedSurnameGraph(selected: SurnameRecord): VizGraphData {
         kind: "surname",
         description: derived.brief,
         surnameId: derived.id,
+        role: "derived",
       },
     });
     addEdge(edges, {
       id: `${surnameNodeId}-${derivedNodeId}-derived`,
       source: surnameNodeId,
       target: derivedNodeId,
-      data: { label: relation.label },
+      data: { label: relation.label, tone: "derived", focus: true },
     });
 
     const secondLevelRecords = getDerivedRecords(derived);
@@ -477,13 +559,14 @@ function buildSelectedSurnameGraph(selected: SurnameRecord): VizGraphData {
           kind: "surname",
           description: secondLevel.brief,
           surnameId: secondLevel.id,
+          role: "secondLevel",
         },
       });
       addEdge(edges, {
         id: `${derivedNodeId}-${secondLevelNodeId}-derived`,
         source: derivedNodeId,
         target: secondLevelNodeId,
-        data: { label: secondRelation.label },
+        data: { label: secondRelation.label, tone: "derived", focus: true },
       });
     });
   });
